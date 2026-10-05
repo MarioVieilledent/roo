@@ -1,0 +1,5 @@
+node_modules/
+dist/
+*.tsbuildinfo
+data/conversations/*.md
+.DS_Store
