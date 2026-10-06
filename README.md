@@ -10,7 +10,7 @@ Frontend: Vite + React 19. Backend: Node.js + TypeScript (Express 5).
 ```bash
 ollama serve           # if Ollama isn't already running
 npm install
-npm run dev            # API on :3001, UI on http://localhost:5173
+npm run dev            # API on :3001, UI on http://localhost:6400
 ```
 
 - `npm run dev:lan`: also exposes the UI on your local network, so you can open it from your phone.
