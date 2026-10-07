@@ -10,11 +10,11 @@ Frontend: Vite + React 19. Backend: Node.js + TypeScript (Express 5).
 ```bash
 ollama serve           # if Ollama isn't already running
 npm install
-npm run dev            # API on :3001, UI on http://localhost:6400
+npm run dev            # API on :6500, UI on http://localhost:6400
 ```
 
 - `npm run dev:lan`: also exposes the UI on your local network over **HTTPS**, so you can open it from your phone (`https://<your-ip>:6400`). The certificate is self-signed and generated locally (no internet needed): accept the browser warning once. HTTPS is required for the microphone on anything other than `localhost`.
-- `npm run build && npm start`: production build; the API serves the UI on http://localhost:3001.
+- `npm run build && npm start`: production build; the API serves the UI on `http://<your-ip>:6500` (and `http://localhost:6500`). It is available to devices on your trusted local network by default.
 
 ## Features
 
@@ -48,8 +48,8 @@ While streaming, only the block being written re-renders, and unfinished constru
 | Variable            | Default                  | Purpose                          |
 | ------------------- | ------------------------ | -------------------------------- |
 | `OLLAMA_HOST`       | `http://127.0.0.1:11434` | Ollama server                    |
-| `PORT`              | `3001`                   | API port                         |
-| `HOST`              | `127.0.0.1`              | API bind address                 |
+| `PORT`              | `6500`                   | API port                         |
+| `HOST`              | `0.0.0.0`                | API bind address (all interfaces) |
 | `CONVERSATIONS_DIR` | `./data/conversations`   | Where the `.md` files are stored |
 
 ## Layout

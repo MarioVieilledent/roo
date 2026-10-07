@@ -7,8 +7,10 @@ import { getStatus, modelCapabilities, OLLAMA_HOST } from './ollama.js';
 import { ConversationStore, titleFrom } from './store.js';
 import type { Attachment, Conversation, ConversationSummary, Message } from './types.js';
 
-const PORT = Number(process.env.PORT || 3001);
-const HOST = process.env.HOST || '127.0.0.1';
+const PORT = Number(process.env.PORT || 6500);
+// Bind to every interface by default so the built app is reachable on the LAN.
+// Set HOST=127.0.0.1 to limit it to this computer.
+const HOST = process.env.HOST || '0.0.0.0';
 const DATA_DIR = path.resolve(process.env.CONVERSATIONS_DIR || path.join(import.meta.dirname, '../../data/conversations'));
 const CLIENT_DIST = path.resolve(import.meta.dirname, '../../client/dist');
 

@@ -2,7 +2,7 @@ import basicSsl from "@vitejs/plugin-basic-ssl";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
-const API = process.env.API_URL ?? "http://127.0.0.1:3001";
+const API = process.env.API_URL ?? "http://127.0.0.1:6500";
 
 // `--mode lan` (npm run dev:lan) serves over HTTPS with a self-signed
 // certificate generated locally: phones only allow microphone access on
