@@ -13,7 +13,7 @@ npm install
 npm run dev            # API on :3001, UI on http://localhost:6400
 ```
 
-- `npm run dev:lan`: also exposes the UI on your local network, so you can open it from your phone.
+- `npm run dev:lan`: also exposes the UI on your local network over **HTTPS**, so you can open it from your phone (`https://<your-ip>:6400`). The certificate is self-signed and generated locally (no internet needed): accept the browser warning once. HTTPS is required for the microphone on anything other than `localhost`.
 - `npm run build && npm start`: production build; the API serves the UI on http://localhost:3001.
 
 ## Features
@@ -23,6 +23,11 @@ npm run dev            # API on :3001, UI on http://localhost:6400
 - **Resumable streaming.** Generation runs on the server, independent of the browser. If you switch to another conversation and come back, the client re-subscribes over SSE: the server first sends a snapshot of the text produced so far, then the live deltas. A reload or dropped connection resumes the same way.
 - **Think toggle.** It's disabled for models without the `thinking` capability. The reasoning appears in a collapsible box between the prompt and the answer. It opens while the model thinks and folds away once the answer starts.
 - **Auto-scroll.** It follows the stream only while you're at the bottom. Scroll up and it stays where you are; a ↓ button brings you back down.
+- **Images and audio** for models that support them (e.g. Gemma 4 with `vision` / `audio`):
+  - paste (Ctrl+V) or drag and drop images and audio files, or use **+** (on phones: Camera, Photos, Files);
+  - record from the microphone with 🎤 (live waveform, discard / keep, or send right away; 5 min max);
+  - attachments are processed in the browser: images are re-encoded to JPEG/PNG with phone-photo rotation applied and scaled to ≤ 2048 px; audio of any format the browser can decode (WebM/Opus, M4A, MP3, OGG…) is converted to 16 kHz mono WAV, which Ollama accepts;
+  - files are stored once (content-addressed) in `data/conversations/attachments/` and linked from the conversation's Markdown. Unused files are cleaned up after a conversation is deleted.
 - **Stop button**, tokens/s stats, copy buttons, and dark/light themes from the OS setting. Works on desktop and phone.
 
 ### Markdown (no libraries, no API calls)
@@ -55,8 +60,10 @@ server/src/
   ollama.ts       `ollama list` + API enrichment, streaming /api/chat
   generation.ts   server-side generations with snapshot + live fan-out
   store.ts        Markdown (de)serialization of conversations
+  attachments.ts  content-addressed image/audio storage
 client/src/
   markdown/       parser.ts, highlight.ts, latex.ts, Markdown.tsx
-  hooks/          useConversation (SSE subscribe/resume), useStickToBottom
-  components/     Sidebar, Welcome (status + models), Composer, ThinkingBox, …
+  hooks/          useConversation (SSE subscribe/resume), useStickToBottom, useRecorder
+  lib/media.ts    image/audio normalization (canvas, Web Audio → WAV)
+  components/     Sidebar, Welcome (status + models), Composer, Attachments, ThinkingBox, …
 ```

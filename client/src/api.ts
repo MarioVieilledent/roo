@@ -1,4 +1,4 @@
-import type { Conversation, ConversationSummary, OllamaStatus } from './types';
+import type { Attachment, Conversation, ConversationSummary, OllamaStatus } from './types';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, {
@@ -16,6 +16,7 @@ export interface SendBody {
   content: string;
   model: string;
   think: boolean;
+  attachments?: Attachment[];
 }
 
 export const api = {
@@ -30,4 +31,11 @@ export const api = {
     request<ConversationSummary>(`/api/conversations/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify({ title }) }),
   remove: (id: string) => request<void>(`/api/conversations/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   streamUrl: (id: string) => `/api/conversations/${encodeURIComponent(id)}/stream`,
+  upload: (blob: Blob) =>
+    request<Pick<Attachment, 'id' | 'kind' | 'mime' | 'size'>>('/api/attachments', {
+      method: 'POST',
+      body: blob,
+      headers: { 'content-type': blob.type || 'application/octet-stream' },
+    }),
+  attachmentUrl: (id: string) => `/api/attachments/${encodeURIComponent(id)}`,
 };

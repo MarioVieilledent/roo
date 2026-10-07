@@ -99,6 +99,46 @@ export const CloseIcon = (p: P) => (
     <path d="M18 6 6 18M6 6l12 12" />
   </svg>
 );
+export const MicIcon = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="9" y="2.5" width="6" height="12" rx="3" />
+    <path d="M5 11a7 7 0 0 0 14 0M12 18v3.5" />
+  </svg>
+);
+export const ImageIcon = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="3" y="3" width="18" height="18" rx="3" />
+    <circle cx="9" cy="9" r="2" />
+    <path d="m21 15-3.6-3.6a2 2 0 0 0-2.8 0L5 21" />
+  </svg>
+);
+export const CameraIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M14.5 4h-5L7.5 6.5H4a2 2 0 0 0-2 2V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8.5a2 2 0 0 0-2-2h-3.5Z" />
+    <circle cx="12" cy="13" r="3.5" />
+  </svg>
+);
+export const PaperclipIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="m21.4 11.1-8.5 8.5a5.5 5.5 0 0 1-7.8-7.8l8.5-8.5a3.7 3.7 0 0 1 5.2 5.2l-8.5 8.5a1.8 1.8 0 0 1-2.6-2.6l7.8-7.8" />
+  </svg>
+);
+export const WaveIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M2 10v4M6 6v12M10 3v18M14 8v8M18 5v14M22 10v4" />
+  </svg>
+);
+export const PlayIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5Z" fill="currentColor" stroke="none" />
+  </svg>
+);
+export const PauseIcon = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="6" y="4" width="4" height="16" rx="1.2" fill="currentColor" stroke="none" />
+    <rect x="14" y="4" width="4" height="16" rx="1.2" fill="currentColor" stroke="none" />
+  </svg>
+);
 
 /** The four-pointed "spark" logo, filled with the brand gradient. */
 export function Spark({ size = 24, spinning = false }: { size?: number; spinning?: boolean }) {

@@ -7,10 +7,27 @@ export interface MessageStats {
   totalDurationMs?: number;
 }
 
+export type AttachmentKind = 'image' | 'audio';
+
+export interface Attachment {
+  /** `<sha256 prefix>.<ext>`, the file name in the attachments directory. */
+  id: string;
+  kind: AttachmentKind;
+  mime: string;
+  size: number;
+  name?: string;
+  width?: number;
+  height?: number;
+  durationMs?: number;
+  /** Normalized peak levels (0–1) used to draw the audio waveform. */
+  waveform?: number[];
+}
+
 export interface Message {
   role: Role;
   content: string;
   createdAt: string;
+  attachments?: Attachment[];
   thinking?: string;
   /** Time spent in the thinking phase, in milliseconds. */
   thinkingMs?: number;

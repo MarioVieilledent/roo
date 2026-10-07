@@ -1,6 +1,6 @@
 import { mkdir, readdir, readFile, rename, stat, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import type { Conversation, ConversationMeta, Message } from './types.js';
+import type { Attachment, Conversation, ConversationMeta, Message } from './types.js';
 
 /**
  * Conversations are stored as one Markdown file per conversation.
@@ -16,8 +16,13 @@ import type { Conversation, ConversationMeta, Message } from './types.js';
  *
  *   # Hello
  *
- *   <!-- message {"role":"user","createdAt":"..."} -->
+ *   <!-- message {"role":"user","createdAt":"...","attachments":[...]} -->
  *   ### 🧑 You
+ *
+ *   <!-- attachments -->
+ *   ![photo.jpg](attachments/3fa9….jpg)
+ *   [🎤 Voice message · 0:07](attachments/b41c….wav)
+ *   <!-- /attachments -->
  *
  *   Hi!
  *
@@ -138,6 +143,9 @@ export function serializeConversation(conv: Conversation): string {
     const { content, thinking, ...meta } = m;
     lines.push(`<!-- message ${JSON.stringify(meta)} -->`);
     lines.push(m.role === 'user' ? '### 🧑 You' : `### ✨ Assistant${m.model ? ` · ${m.model}` : ''}`, '');
+    if (m.attachments?.length) {
+      lines.push('<!-- attachments -->', ...m.attachments.map(attachmentLink), '<!-- /attachments -->', '');
+    }
     if (thinking) {
       lines.push('<!-- thinking -->', '<details>', '<summary>Thinking</summary>', '', thinking.trim(), '', '</details>', '<!-- /thinking -->', '');
     }
@@ -171,6 +179,9 @@ export function parseConversation(text: string, fallbackId: string): Conversatio
     // Drop the human-readable "### You / ### Assistant" heading.
     while (body.length && body[0].trim() === '') body.shift();
     if (body.length && /^### /.test(body[0])) body.shift();
+    const aStart = body.indexOf('<!-- attachments -->');
+    const aEnd = body.indexOf('<!-- /attachments -->');
+    if (aStart !== -1 && aEnd > aStart) body.splice(aStart, aEnd - aStart + 1);
     let thinking: string | undefined;
     const tStart = body.indexOf('<!-- thinking -->');
     const tEnd = body.indexOf('<!-- /thinking -->');
@@ -220,7 +231,21 @@ export function parseConversation(text: string, fallbackId: string): Conversatio
   };
 }
 
-export function titleFrom(text: string): string {
+/** A Markdown link to the file, relative to the conversation's `.md` file. */
+function attachmentLink(a: Attachment) {
+  const href = `attachments/${a.id}`;
+  const label = (a.name ?? '').replace(/[[\]\n]/g, ' ');
+  if (a.kind === 'image') return `![${label}](${href})`;
+  const s = Math.round((a.durationMs ?? 0) / 1000);
+  const duration = a.durationMs !== undefined ? ` · ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}` : '';
+  return `[🎤 ${label || 'Voice message'}${duration}](${href})`;
+}
+
+export function titleFrom(text: string, attachments: Attachment[] = []): string {
+  if (!text.trim()) {
+    if (attachments.some((a) => a.kind === 'audio')) return 'Voice message';
+    if (attachments.length) return attachments.length > 1 ? 'Images' : 'Image';
+  }
   const line =
     text
       .split('\n')

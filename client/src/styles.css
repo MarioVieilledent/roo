@@ -608,6 +608,10 @@ button:disabled {
   background: color-mix(in srgb, var(--blue) 20%, transparent);
   color: color-mix(in srgb, var(--blue) 55%, var(--text));
 }
+.cap-audio {
+  background: color-mix(in srgb, var(--ok) 20%, transparent);
+  color: color-mix(in srgb, var(--ok) 55%, var(--text));
+}
 
 /* ───────────────────────── Welcome ───────────────────────── */
 .welcome {
@@ -1109,6 +1113,371 @@ button:disabled {
   color: var(--text);
 }
 
+/* ───────────────────────── Attachments ───────────────────────── */
+.icon-btn:disabled {
+  opacity: 0.4;
+  background: none;
+}
+.attach {
+  position: relative;
+}
+.attach-btn {
+  transition: background 0.15s, color 0.15s, rotate 0.2s ease;
+}
+.attach-btn.open {
+  rotate: 45deg;
+  background: var(--hover);
+}
+.attach-menu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  z-index: 30;
+  min-width: 200px;
+  padding: 6px;
+  border-radius: 18px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  animation: pop 0.15s ease;
+  transform-origin: bottom left;
+}
+.attach-menu button {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 15px;
+  text-align: left;
+}
+.attach-menu button:hover:not(:disabled) {
+  background: var(--hover);
+}
+.attach-menu button:disabled {
+  opacity: 0.4;
+}
+
+/* Pending attachments, inside the composer */
+.tray {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 6px 10px 8px 0;
+  margin-bottom: 2px;
+  scrollbar-width: none;
+}
+.tray-item {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  height: 64px;
+  border-radius: 16px;
+  background: var(--surface-2);
+  color: var(--muted);
+  animation: pop 0.2s ease;
+}
+.tray-item.image {
+  width: 64px;
+}
+.tray-item.image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+.tray-item.audio {
+  padding: 0 14px 0 8px;
+  min-width: 200px;
+}
+.tray-audio-placeholder {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  padding-left: 8px;
+}
+.tray-item.loading img,
+.tray-item.loading .audio-player {
+  opacity: 0.45;
+}
+.tray-spinner {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2.5px solid color-mix(in srgb, var(--text) 25%, transparent);
+  border-top-color: var(--text);
+  animation: spin 0.8s linear infinite;
+}
+.tray-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--surface-3);
+  color: var(--text);
+  border: 2px solid var(--surface);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.tray-item:hover .tray-remove,
+.tray-remove:focus-visible {
+  opacity: 1;
+}
+
+/* Audio player (messages and tray) */
+.audio-player {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 52px;
+  width: min(320px, 100%);
+  padding: 0 16px 0 8px;
+  border-radius: 26px;
+  background: var(--user-bubble);
+}
+.audio-player.compact {
+  height: 44px;
+  width: auto;
+  min-width: 180px;
+  padding: 0;
+  gap: 8px;
+  background: none;
+}
+.audio-play {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--text);
+  color: var(--bg);
+  transition: transform 0.15s;
+}
+.audio-player.compact .audio-play {
+  width: 30px;
+  height: 30px;
+}
+.audio-play:hover {
+  transform: scale(1.06);
+}
+.audio-play svg {
+  margin-left: 1px;
+}
+.audio-wave {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 28px;
+  cursor: pointer;
+  touch-action: none;
+}
+.audio-wave:focus-visible {
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+.audio-wave span {
+  flex: 1;
+  min-width: 2px;
+  max-width: 4px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--text) 28%, transparent);
+  transition: background 0.1s;
+}
+.audio-wave span.on {
+  background: var(--accent);
+}
+.audio-time {
+  flex: none;
+  font-size: 12px;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+  min-width: 30px;
+  text-align: right;
+}
+
+/* Attachments of a sent message */
+.msg-attachments {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  max-width: min(85%, 640px);
+  margin-bottom: 4px;
+}
+.att-images {
+  display: grid;
+  gap: 4px;
+  border-radius: 20px;
+  overflow: hidden;
+}
+.att-images.n2,
+.att-images.n4 {
+  grid-template-columns: repeat(2, 150px);
+}
+.att-images.n3 {
+  grid-template-columns: repeat(3, 120px);
+}
+.att-image {
+  display: block;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.att-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: scale 0.25s ease, filter 0.2s;
+}
+.att-image:hover img {
+  filter: brightness(1.06);
+}
+.att-images:not(.n1) .att-image {
+  aspect-ratio: 1;
+}
+.att-image.single img {
+  width: auto;
+  height: auto;
+  /* vw, not %: a percentage of a shrink-to-fit parent leaves a gap beside the image */
+  max-width: min(340px, 70vw);
+  max-height: 340px;
+}
+.att-images.n1 {
+  border-radius: 20px;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  background: rgba(0, 0, 0, 0.88);
+  animation: fade 0.18s ease;
+  cursor: zoom-out;
+}
+.lightbox img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 12px;
+  cursor: default;
+  animation: pop 0.2s ease;
+}
+.lightbox-close {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  right: 12px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+}
+.lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+/* Recording, inside the composer */
+.icon-btn.mic:hover:not(:disabled) {
+  color: var(--accent);
+}
+.composer.recording {
+  border-color: color-mix(in srgb, var(--rose) 45%, var(--border));
+}
+.rec-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 48px;
+  padding-right: 8px;
+}
+.rec-dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ea4335;
+  box-shadow: 0 0 0 0 rgba(234, 67, 53, 0.6);
+  animation: rec-pulse 1.4s ease-out infinite;
+}
+.rec-time {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+  min-width: 38px;
+}
+.live-wave {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+}
+.rec-limit {
+  flex: none;
+  font-size: 12px;
+  color: var(--warn);
+}
+.rec-done {
+  color: var(--text);
+}
+.send.waiting {
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+/* Drag and drop */
+.drop-zone {
+  position: absolute;
+  inset: 8px;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  border-radius: 28px;
+  border: 2px dashed color-mix(in srgb, var(--accent) 70%, transparent);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(6px);
+  pointer-events: none;
+  animation: fade 0.15s ease;
+}
+.drop-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+.drop-card strong {
+  font-size: 20px;
+  font-weight: 500;
+}
+.drop-card span {
+  color: var(--muted);
+  font-size: 14px;
+}
+.drop-icons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+  color: var(--accent);
+}
+.drop-icons svg {
+  padding: 12px;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: var(--accent-bg);
+}
+
 .toast {
   position: absolute;
   left: 50%;
@@ -1492,6 +1861,19 @@ math .cancel {
     transform: translateY(8px);
   }
 }
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes rec-pulse {
+  70% {
+    box-shadow: 0 0 0 8px rgba(234, 67, 53, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(234, 67, 53, 0);
+  }
+}
 @keyframes pop {
   from {
     opacity: 0;
@@ -1592,6 +1974,23 @@ math .cancel {
   }
   .toast {
     bottom: 110px;
+  }
+  .tray-remove {
+    opacity: 1;
+  }
+  .msg-attachments {
+    max-width: 90%;
+  }
+  .att-images.n2,
+  .att-images.n4 {
+    grid-template-columns: repeat(2, minmax(0, 130px));
+  }
+  .att-images.n3 {
+    grid-template-columns: repeat(3, minmax(0, 96px));
+  }
+  .att-image.single img {
+    max-width: min(280px, 75vw);
+    max-height: 300px;
   }
 }
 @media (max-width: 480px) {

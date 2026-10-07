@@ -169,7 +169,12 @@ export function useConversation(id: string | null, onChange: () => void) {
         onChangeRef.current();
         return created.id;
       }
-      const userMsg: Message = { role: 'user', content: body.content, createdAt: now };
+      const userMsg: Message = {
+        role: 'user',
+        content: body.content,
+        createdAt: now,
+        ...(body.attachments?.length ? { attachments: body.attachments } : {}),
+      };
       const before = conv;
       updateConv((c) => ({ ...c, messages: [...c.messages, userMsg], generating: true }));
       updateLive(id, emptyLive(body.model, body.think));

@@ -2,6 +2,7 @@ import { memo, useRef, useState } from 'react';
 import { copyText } from '../lib/clipboard';
 import { Markdown } from '../markdown/Markdown';
 import type { LiveReply, Message } from '../types';
+import { MessageAttachments } from './Attachments';
 import { AlertIcon, CheckIcon, CopyIcon, Spark } from './Icons';
 import { ThinkingBox } from './ThinkingBox';
 
@@ -28,10 +29,13 @@ function CopyButton({ text, label = 'Copy' }: { text: string; label?: string }) 
 export const UserMessage = memo(function UserMessage({ message }: { message: Message }) {
   return (
     <div className="msg user">
-      <div className="bubble">{message.content}</div>
-      <div className="msg-actions">
-        <CopyButton text={message.content} label="Copy prompt" />
-      </div>
+      {message.attachments?.length ? <MessageAttachments attachments={message.attachments} /> : null}
+      {message.content && <div className="bubble">{message.content}</div>}
+      {message.content && (
+        <div className="msg-actions">
+          <CopyButton text={message.content} label="Copy prompt" />
+        </div>
+      )}
     </div>
   );
 });

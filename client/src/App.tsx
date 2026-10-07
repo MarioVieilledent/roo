@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type DragEvent } from 'react';
 import { api } from './api';
-import { Composer } from './components/Composer';
-import { ArrowDownIcon, MenuIcon, PlusIcon } from './components/Icons';
+import { Composer, type ComposerHandle } from './components/Composer';
+import { ArrowDownIcon, ImageIcon, MenuIcon, MicIcon, PlusIcon } from './components/Icons';
 import { AssistantMessage, LiveMessage, UserMessage } from './components/MessageView';
 import { ModelPicker } from './components/ModelPicker';
 import { Sidebar } from './components/Sidebar';
@@ -9,7 +9,7 @@ import { Welcome } from './components/Welcome';
 import { forgetConversation, useConversation } from './hooks/useConversation';
 import { useConversationRoute } from './hooks/useHashRoute';
 import { useStickToBottom } from './hooks/useStickToBottom';
-import type { ConversationSummary, OllamaStatus } from './types';
+import type { Attachment, ConversationSummary, OllamaStatus } from './types';
 
 function usePersisted<T>(key: string, initial: T) {
   const [value, setValue] = useState<T>(() => {
@@ -31,6 +31,7 @@ function usePersisted<T>(key: string, initial: T) {
 }
 
 const isMobile = () => window.matchMedia('(max-width: 860px)').matches;
+const hasFiles = (e: DragEvent) => [...e.dataTransfer.types].includes('Files');
 
 export default function App() {
   const [id, navigate] = useConversationRoute();
@@ -42,6 +43,9 @@ export default function App() {
   const [collapsed, setCollapsed] = usePersisted('roo.sidebarCollapsed', false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const dragDepth = useRef(0);
+  const composer = useRef<ComposerHandle>(null);
   const { scrollRef, contentRef, atBottom, scrollToBottom, scrollToTop } = useStickToBottom();
 
   const refreshList = useCallback(() => {
@@ -123,11 +127,11 @@ export default function App() {
     setDrawerOpen(false);
   };
 
-  const handleSend = async (content: string) => {
+  const handleSend = async (content: string, attachments: Attachment[]) => {
     if (!model) return false;
     try {
       scrollToBottom();
-      const createdId = await send({ content, model, think: think && thinkSupported !== false });
+      const createdId = await send({ content, model, think: think && thinkSupported !== false, attachments });
       if (createdId) navigate(createdId);
       return true;
     } catch (e) {
@@ -153,7 +157,9 @@ export default function App() {
   };
 
   const selected = status?.models.find((m) => m.name === model);
-  const thinkSupported = selected ? (selected.capabilities.length ? selected.capabilities.includes('thinking') : null) : null;
+  const supports = (cap: string) => (selected?.capabilities.length ? selected.capabilities.includes(cap) : null);
+  const thinkSupported = supports('thinking');
+  const media = { vision: supports('vision'), audio: supports('audio'), model };
   const disabledReason = !status ? 'Connecting…' : !status.running ? 'Ollama is not running' : !model ? 'Choose a model first' : null;
   const generating = !!live || !!conv?.generating;
   const showWelcome = !id;
@@ -170,7 +176,34 @@ export default function App() {
         onDelete={handleDelete}
         onRename={handleRename}
       />
-      <main className="main">
+      <main
+        className="main"
+        onDragEnter={(e) => {
+          if (!hasFiles(e)) return;
+          e.preventDefault();
+          dragDepth.current++;
+          setDragging(true);
+        }}
+        onDragOver={(e) => {
+          if (!hasFiles(e)) return;
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'copy';
+        }}
+        onDragLeave={(e) => {
+          if (!hasFiles(e)) return;
+          if (--dragDepth.current <= 0) {
+            dragDepth.current = 0;
+            setDragging(false);
+          }
+        }}
+        onDrop={(e) => {
+          if (!hasFiles(e)) return;
+          e.preventDefault();
+          dragDepth.current = 0;
+          setDragging(false);
+          composer.current?.addFiles([...e.dataTransfer.files]);
+        }}
+      >
         <div className={`aurora${showWelcome ? ' show' : ''}`} aria-hidden>
           <span />
           <span />
@@ -218,8 +251,11 @@ export default function App() {
             </button>
           )}
           <Composer
+            ref={composer}
             onSend={handleSend}
             onStop={stop}
+            onError={setToast}
+            media={media}
             generating={generating}
             think={think}
             onThinkChange={setThink}
@@ -229,6 +265,18 @@ export default function App() {
           />
           <p className="disclaimer">Runs locally with Ollama. Models can make mistakes — double-check important info.</p>
         </div>
+        {dragging && (
+          <div className="drop-zone" aria-hidden>
+            <div className="drop-card">
+              <div className="drop-icons">
+                <ImageIcon size={28} />
+                <MicIcon size={28} />
+              </div>
+              <strong>Drop images or audio here</strong>
+              <span>They’ll be attached to your message</span>
+            </div>
+          </div>
+        )}
         {toast && (
           <div className="toast" role="alert" onClick={() => setToast(null)}>
             {toast}

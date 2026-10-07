@@ -7,10 +7,27 @@ export interface MessageStats {
   totalDurationMs?: number;
 }
 
+export type AttachmentKind = 'image' | 'audio';
+
+/** An image or audio clip stored on the server, served at `/api/attachments/<id>`. */
+export interface Attachment {
+  id: string;
+  kind: AttachmentKind;
+  mime: string;
+  size: number;
+  name?: string;
+  width?: number;
+  height?: number;
+  durationMs?: number;
+  /** Normalized peak levels (0–1) used to draw the audio waveform. */
+  waveform?: number[];
+}
+
 export interface Message {
   role: Role;
   content: string;
   createdAt: string;
+  attachments?: Attachment[];
   thinking?: string;
   thinkingMs?: number;
   model?: string;

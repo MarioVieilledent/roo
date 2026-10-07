@@ -1,5 +1,6 @@
 import type { Response } from 'express';
-import { chatStream, modelCapabilities } from './ollama.js';
+import type { AttachmentStore } from './attachments.js';
+import { chatStream, modelCapabilities, type ChatMessage } from './ollama.js';
 import type { ConversationStore } from './store.js';
 import type { Conversation, Message } from './types.js';
 
@@ -31,7 +32,10 @@ export interface Snapshot {
 export class GenerationManager {
   private active = new Map<string, Generation>();
 
-  constructor(private store: ConversationStore) {}
+  constructor(
+    private store: ConversationStore,
+    private attachments: AttachmentStore,
+  ) {}
 
   isGenerating(id: string) {
     return this.active.has(id);
@@ -85,14 +89,24 @@ export class GenerationManager {
     for (const res of gen.subscribers) send(res, event, data);
   }
 
-  private async run(gen: Generation, conv: Conversation) {
-    const history = conv.messages
-      .filter((m) => m.content.trim() && !(m.role === 'assistant' && m.error && !m.content))
-      .map((m) => ({ role: m.role, content: m.content }));
+  /** The conversation as Ollama expects it: images and audio go in `images`, base64-encoded. */
+  private async history(conv: Conversation): Promise<ChatMessage[]> {
+    const usable = conv.messages.filter((m) => m.content.trim() || m.attachments?.length);
+    return Promise.all(
+      usable.map(async (m) => {
+        const files = m.attachments ?? [];
+        if (!files.length) return { role: m.role, content: m.content };
+        const images = await Promise.all(files.map((a) => this.attachments.base64(a.id)));
+        return { role: m.role, content: m.content.trim() || defaultPrompt(files), images };
+      }),
+    );
+  }
 
+  private async run(gen: Generation, conv: Conversation) {
     let error: string | undefined;
     let stats: Message['stats'];
     try {
+      const history = await this.history(conv);
       // Only send `think` to models that understand it; others reject the field.
       const caps = await modelCapabilities(gen.model);
       const supportsThinking = caps.includes('thinking');
@@ -159,6 +173,15 @@ export class GenerationManager {
     this.broadcast(gen, 'done', { message });
     for (const res of gen.subscribers) res.end();
   }
+}
+
+/**
+ * Sent in place of an empty prompt: without any text, models tend to ignore a
+ * voice message or describe it instead of answering it.
+ */
+function defaultPrompt(files: Message['attachments'] & {}) {
+  if (files.some((a) => a.kind === 'audio')) return 'Listen to this audio and respond to it.';
+  return files.length > 1 ? 'Describe these images.' : 'Describe this image.';
 }
 
 export function send(res: Response, event: string, data: unknown) {

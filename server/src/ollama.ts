@@ -202,9 +202,16 @@ export interface ChatChunk {
   total_duration?: number;
 }
 
+export interface ChatMessage {
+  role: string;
+  content: string;
+  /** Base64-encoded images or audio clips (Ollama takes both in this field). */
+  images?: string[];
+}
+
 /** Streams /api/chat as parsed NDJSON chunks. */
 export async function* chatStream(
-  body: { model: string; messages: { role: string; content: string }[]; think?: boolean },
+  body: { model: string; messages: ChatMessage[]; think?: boolean },
   signal: AbortSignal,
 ): AsyncGenerator<ChatChunk> {
   const res = await fetch(`${OLLAMA_HOST}/api/chat`, {
