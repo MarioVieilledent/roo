@@ -1,7 +1,8 @@
 node_modules/
 dist/
 *.tsbuildinfo
-data/conversations/*.md
+data/conversations/*
+data/productions/*
 data/conversations/attachments/*
 !data/conversations/attachments/.gitkeep
 .DS_Store
